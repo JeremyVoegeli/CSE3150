@@ -1,0 +1,1 @@
+All of these ex<something>.cpp are practicing making arrays putting things on stack vs. heap
