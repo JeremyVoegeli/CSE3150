@@ -1,6 +1,6 @@
 #pragma once
+#include "policy.hpp"
 #include <iostream>
-#include <vector>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -16,14 +16,24 @@ public:
         std::unordered_set<int> customers;
         std::unordered_set<int> peers;
         int rank;
+        std::unique_ptr<Policy> policy;
 
         //constructors
-        AS(int asn) : asn_(asn), rank(-1) {}
-        AS() : asn_(-1), rank(-1) {}
+        AS(int asn) : asn_(asn), rank(-1), policy(std::make_unique<BGP>(asn)) {}
+        AS() : asn_(-1), rank(-1), policy(std::make_unique<BGP>(-1)) {}
+
+        //move constructors
+        AS(AS&&) = default;
+        AS& operator=(AS&&) = default;
 
         //getter for ASN
         int asn() const{
             return asn_;
+        }
+
+        //set policy
+        void set_policy(std::unique_ptr<Policy> p){
+            policy = std::move(p);
         }
     };
 

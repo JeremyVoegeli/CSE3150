@@ -1,24 +1,27 @@
 #include "policy.hpp"
 
-void process_announcement(const Announcement& a){
-    if (!local_rib.contains(a.prefix)){
-        local_rib[a.prefix] = a;
-    } else {
-        const Announcement& old = local_rib[a.prefix];
+void BGP::process_announcement(const Announcement& a){
+    Announcement copy = a;
+    copy.as_path.insert(copy.as_path.begin(), asn);
 
-        if (a.received_from < old.received_from){
-            local_rib[a.prefix] = a;
+    if (!local_rib.contains(copy.prefix)){
+        local_rib[copy.prefix] = copy;
+    } else {
+        const Announcement& old = local_rib[copy.prefix];
+
+        if (copy.received_from < old.received_from){
+            local_rib[copy.prefix] = copy;
         } else if (
-            a.received_from == old.received_from
-            && a.as_path.size() < old.as_path.size()
+            copy.received_from == old.received_from
+            && copy.as_path.size() < old.as_path.size()
         ){
-            local_rib[a.prefix] = a;
+            local_rib[copy.prefix] = copy;
         } else if (
-            a.received_from == old.received_from
-            && a.as_path.size() < old.as_path.size()
-            && a.next_hop_asn < old.next_hop_asn
+            copy.received_from == old.received_from
+            && copy.as_path.size() == old.as_path.size()
+            && copy.next_hop_asn < old.next_hop_asn
         ){
-            local_rib[a.prefix] = a;
+            local_rib[copy.prefix] = copy;
         }
     }
 };
@@ -31,3 +34,9 @@ void BGP::add_to_received_queue(const Announcement& a){
 void BGP::clear_received_queue(){
     received_queue.clear();
 }
+
+void ROV::process_announcement(const Announcement& a){
+    if(!a.rov_invalid){
+        BGP::process_announcement(a);
+    }
+};

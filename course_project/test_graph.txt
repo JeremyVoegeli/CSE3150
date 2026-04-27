@@ -1,0 +1,4 @@
+# provider|customer|relationship
+4|3|-1
+4|666|-1
+777|4|0
